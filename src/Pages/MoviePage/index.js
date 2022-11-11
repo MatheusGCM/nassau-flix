@@ -10,6 +10,7 @@ import {
   ScrollView,
   FlatList,
   Modal,
+  Animated,
 } from 'react-native';
 import styles from './style';
 import {
@@ -19,14 +20,11 @@ import {
   getAccountStates,
   markFavorite,
   unmarkFavorite,
-  createListFilms,
   addMovieList,
-  getMoviesDetailsList,
   getUserList,
+  getMoviesDetailsList,
 } from '../../service/api';
 import Icon from 'react-native-vector-icons/AntDesign';
-import Check from 'react-native-vector-icons/FontAwesome5';
-import ArrowLeft from 'react-native-vector-icons/Feather';
 import EvilIcons from 'react-native-vector-icons/EvilIcons';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import Cast from '../../Components/Cast';
@@ -49,9 +47,11 @@ const MoviePage = ({route, navigation}) => {
   const [modalVisible, setModalVisible] = useState(false);
   const [rated, setRated] = useState();
   const [rating, setRating] = useState(0);
-  const [value, setValue] = useState('');
+  const [value, setValue] = useState(0);
   const [modalVisibleSucess, setModalVisibleSucess] = useState(false);
   const [userList, setUserList] = useState({});
+  const [selected, setSelected] = useState(false);
+  const [tratColor] = useState(new Animated.Value(0));
 
   useEffect(() => {
     const getResponseMovieDetails = async () => {
@@ -100,7 +100,7 @@ const MoviePage = ({route, navigation}) => {
       setUserList(response.data);
     };
     getResponseListMovies();
-  }, [id, route.params.id, udapte]);
+  }, [id, route.params.id, udapte, user.id]);
 
   const Directing = movieCredits.crew?.find(
     element => element.job === 'Director',
@@ -109,12 +109,13 @@ const MoviePage = ({route, navigation}) => {
   const favorite = async () => {
     setUpdate(!udapte);
     if (fav) {
+      setFav(false);
       await unmarkFavorite(user.id, id, 'movie', route.params.id);
     } else {
+      setFav(true);
       await markFavorite(user.id, id, 'movie', route.params.id);
     }
   };
-
   const rateMovie = async () => {
     await rate('movie', route.params.id, id, rating);
     setUpdate(!udapte);
@@ -126,15 +127,47 @@ const MoviePage = ({route, navigation}) => {
 
   function handleClose() {
     bottomSheetRef.current?.close();
+    Animated.timing(tratColor, {
+      toValue: 0,
+      duration: 500,
+      useNativeDriver: true,
+    }).start(() => {
+      setValue(0);
+      setSelected(false);
+    });
   }
 
   const getResponseAddMovie = async () => {
-    const response = await addMovieList(id, route.params.id, value);
-    if (response.status === 201) {
-      setModalVisibleSucess(true);
+    if (value > 0) {
+      const responseDetailsList = await getMoviesDetailsList(value);
+      if (
+        responseDetailsList.data.items.find(item => item.id === route.params.id)
+      ) {
+        Animated.timing(tratColor, {
+          toValue: 1,
+          duration: 500,
+          useNativeDriver: true,
+        }).start();
+      } else {
+        const response = await addMovieList(id, route.params.id, value);
+        if (response.status === 201) {
+          setModalVisibleSucess(true);
+          Animated.timing(tratColor, {
+            toValue: 0,
+            duration: 500,
+            useNativeDriver: true,
+          }).start();
+        }
+      }
+    } else {
+      Animated.timing(tratColor, {
+        toValue: 1,
+        duration: 500,
+        useNativeDriver: true,
+      }).start();
     }
-    console.log('response', response.data);
   };
+
   const modalSalveFilme = () => {
     return (
       <BottomSheet
@@ -155,14 +188,38 @@ const MoviePage = ({route, navigation}) => {
               value={value}
               onValueChange={newValue => {
                 setValue(newValue);
+                Animated.timing(tratColor, {
+                  toValue: 0,
+                  duration: 500,
+                  useNativeDriver: true,
+                }).start(() => {
+                  setSelected(true);
+                });
               }}>
               <View style={styles.radioBottomRow}>
                 <FlatList
                   data={userList.results}
                   keyExtractor={item => String(item.id)}
                   style={{height: 125}}
+                  ListEmptyComponent={
+                    <TouchableOpacity
+                      onPress={() =>
+                        navigation.navigate('profileScreen', {
+                          screen: 'ListPage',
+                        })
+                      }>
+                      <Text style={styles.emptyTexList}>
+                        Para adicionar um filme você precisar criar uma lista
+                        primeiro. Clique aqui para criar uma lista!
+                      </Text>
+                    </TouchableOpacity>
+                  }
                   renderItem={({item}) => (
-                    <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                    <View
+                      style={{
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                      }}>
                       <RadioButton color="#000" value={item.id} />
                       <Text style={styles.textRadioBottom}>{item.name}</Text>
                     </View>
@@ -170,9 +227,33 @@ const MoviePage = ({route, navigation}) => {
                 />
               </View>
               <View>
+                <View
+                  style={{
+                    alignItems: 'center',
+                    height: 22,
+                  }}>
+                  <Animated.Text
+                    style={{
+                      color: '#EC2626',
+                      opacity: tratColor,
+                      fontFamily: 'OpenSans-MediumItalic',
+                    }}>
+                    {selected
+                      ? 'Filme já existe na lista!'
+                      : 'Selecione uma lista!'}
+                  </Animated.Text>
+                </View>
                 <TouchableOpacity
+                  activeOpacity={0.7}
                   onPress={getResponseAddMovie}
-                  style={styles.btnSave}>
+                  disabled={userList.results?.length === 0}
+                  style={[
+                    styles.btnSave,
+                    {
+                      backgroundColor:
+                        userList.results?.length === 0 ? '#C4C4C4' : '#000',
+                    },
+                  ]}>
                   <Text style={styles.textSave}>Salvar</Text>
                 </TouchableOpacity>
               </View>
@@ -191,18 +272,15 @@ const MoviePage = ({route, navigation}) => {
         visible={modalVisibleSucess}>
         <View style={styles.modalbackground}>
           <View style={styles.containerSucess}>
-            <View>
-              <Check
-                style={styles.iconCheck}
-                name="check"
-                size={20}
-                color="#000"
-              />
-            </View>
-
+            <Image source={require('../../assets/check.png')} />
             <Text style={styles.textSucess}>Lista atualizada com sucesso!</Text>
             <TouchableOpacity
-              onPress={() => setModalVisibleSucess(false)}
+              activeOpacity={0.9}
+              onPress={() => {
+                setModalVisibleSucess(false);
+                // handleClose();
+                setUpdate(!udapte);
+              }}
               style={styles.btnOk}>
               <Text style={styles.textOk}>Ok</Text>
             </TouchableOpacity>
@@ -241,7 +319,8 @@ const MoviePage = ({route, navigation}) => {
                 setModalVisible(true);
               }}>
               <Text style={styles.rated.text}>
-                Sua nota: {rated.value.toFixed(1)}/10
+                Sua nota:{' '}
+                {rated.value === 10 ? rated.value : rated.value.toFixed(1)}/10
               </Text>
 
               <View style={styles.icon}>
@@ -322,25 +401,25 @@ const MoviePage = ({route, navigation}) => {
         </View>
         <ScrollView style={styles.contentOverview}>
           <Text style={styles.taglineMovie}>
-            {movieDetails.tagline ? movieDetails.tagline : 'Sinopse:'}
+            {movieDetails.tagline
+              ? movieDetails.tagline.toUpperCase()
+              : 'Sinopse:'}
           </Text>
           <Text style={styles.overviewMovie}>
             {movieDetails.overview ? movieDetails.overview : 'Sem descrição...'}
           </Text>
         </ScrollView>
         <View style={styles.flex2_5}>
+          <>
+            <View style={styles.boxElenco}>
+              <Text style={styles.txtBoxElenco}>Elenco</Text>
+            </View>
+            <View style={styles.line} />
+          </>
           <FlatList
             data={movieCredits.cast}
             keyExtractor={item => String(item.id)}
             renderItem={({item, i}) => <Cast key={i} {...item} />}
-            ListHeaderComponent={() => (
-              <>
-                <View style={styles.boxElenco}>
-                  <Text style={styles.txtBoxElenco}>Elenco</Text>
-                </View>
-                <View style={styles.line} />
-              </>
-            )}
           />
         </View>
       </View>

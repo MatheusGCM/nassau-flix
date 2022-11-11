@@ -9,7 +9,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   flex2_5: {
-    flex: 2.5,
+    flex: 3,
   },
   btnsContainer: {
     width: '90%',
@@ -139,10 +139,9 @@ const styles = StyleSheet.create({
   },
   contentOverview: {
     flex: 1,
+    marginTop: 10,
     marginEnd: 20,
     marginBottom: 15,
-    // borderColor: 'red',
-    // borderWidth: 2,
   },
   taglineMovie: {
     color: '#fff',
@@ -233,7 +232,6 @@ const styles = StyleSheet.create({
   btnSave: {
     alignSelf: 'center',
     alignItems: 'center',
-    margin: 20,
     padding: 10,
     width: '25%',
     borderRadius: 5,
@@ -259,48 +257,46 @@ const styles = StyleSheet.create({
   },
 
   containerSucess: {
-    width: '80%',
-    height: '23%',
-    marginBottom: '50%',
+    width: '85%',
+    height: 166,
     alignItems: 'center',
-    justifyContent: 'center',
     borderRadius: 25,
     backgroundColor: '#fff',
+    paddingTop: 29,
   },
   modalbackground: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(0,0,0,0.6)',
-  },
-  iconCheck: {
-    paddingTop: 8,
-    paddingLeft: 8,
-    padding: 2,
-    borderRadius: 30,
-    borderWidth: 3,
-    borderColor: '#000',
+    backgroundColor: 'rgba(0,0,0,0.7)',
   },
   textSucess: {
-    margin: 25,
     fontFamily: 'OpenSans-Bold',
     color: '#000',
     fontSize: 14,
+    marginTop: 17,
   },
   btnOk: {
-    alignSelf: 'center',
     alignItems: 'center',
-    width: '30%',
+    justifyContent: 'center',
+    width: 83,
+    height: 22,
     borderRadius: 5,
     backgroundColor: '#000',
-    margin: 5,
+    marginTop: 21,
   },
   textOk: {
     textTransform: 'uppercase',
     fontFamily: 'OpenSans-Bold',
     fontSize: 10,
     color: '#fff',
-    padding: 10,
+  },
+  emptyTexList: {
+    color: '#000',
+    margin: '10%',
+    fontFamily: 'OpenSans-Regular',
+    fontSize: 13,
+    borderRadius: 6,
   },
 });
 
