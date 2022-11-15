@@ -16,7 +16,6 @@ import {getToken, validateToken} from '../../service/api';
 import {Context} from '../../context';
 import * as Animatable from 'react-native-animatable';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import Load from '../../Components/Load';
 
 const Login = ({navigation}) => {
   const {setId} = useContext(Context);
@@ -93,7 +92,7 @@ const Login = ({navigation}) => {
                 <Animatable.View animation="fadeInUp">
                   <Image
                     style={styles.logoContent}
-                    source={require('../../assets/logo.png')}
+                    source={require('../../assets/logo1.png')}
                   />
                 </Animatable.View>
                 <View style={styles.boxContent}>
@@ -157,7 +156,10 @@ const Login = ({navigation}) => {
             </View>
           ) : (
             <View style={styles.loading}>
-              <Image source={require('../../assets/logo.png')} />
+              <Image
+                source={require('../../assets/logo1.png')}
+                style={{width: 200, height: 200}}
+              />
               <ActivityIndicator size={50} color="#EC2626" />
             </View>
           )}

@@ -235,3 +235,11 @@ export const deleteList = async (list_id, session_id) => {
     .delete(`list/${list_id}?api_key=${api_key}&session_id=${session_id}`)
     .catch(error => console.log(error));
 };
+
+export const getVideo = async (id, midia) => {
+  return api
+    .get(`/${midia}/${id}/videos?api_key=${api_key}&language=pt-BR`)
+    .catch(error => {
+      console.warn('Erro ao buscar trailers');
+    });
+};

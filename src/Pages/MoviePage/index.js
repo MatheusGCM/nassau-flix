@@ -11,6 +11,7 @@ import {
   FlatList,
   Modal,
   Animated,
+  Pressable,
 } from 'react-native';
 import styles from './style';
 import {
@@ -23,6 +24,7 @@ import {
   addMovieList,
   getUserList,
   getMoviesDetailsList,
+  getVideo,
 } from '../../service/api';
 import Icon from 'react-native-vector-icons/AntDesign';
 import EvilIcons from 'react-native-vector-icons/EvilIcons';
@@ -34,6 +36,7 @@ import ModalRating from '../../Components/ModalRating';
 import {Context} from '../../context';
 import ButtonFavorite from '../../Components/ButtonFavorite';
 import ButtonGoBack from '../../Components/ButtonGoBack';
+import ModalTrailer from '../../Components/ModalTrailer';
 
 const MoviePage = ({route, navigation}) => {
   const {id, user, udapte, setUpdate} = useContext(Context);
@@ -45,6 +48,7 @@ const MoviePage = ({route, navigation}) => {
   const [fav, setFav] = useState();
 
   const [modalVisible, setModalVisible] = useState(false);
+  const [modalTrailerVisible, setModalTrailerVisible] = useState(false);
   const [rated, setRated] = useState();
   const [rating, setRating] = useState(0);
   const [value, setValue] = useState(0);
@@ -52,6 +56,8 @@ const MoviePage = ({route, navigation}) => {
   const [userList, setUserList] = useState({});
   const [selected, setSelected] = useState(false);
   const [tratColor] = useState(new Animated.Value(0));
+  const [loading, setLoading] = useState(false);
+  const [trailer, setTrailer] = useState([]);
 
   useEffect(() => {
     const getResponseMovieDetails = async () => {
@@ -290,6 +296,19 @@ const MoviePage = ({route, navigation}) => {
     );
   };
 
+  const getTrailer = async () => {
+    try {
+      setModalTrailerVisible(true);
+      setLoading(true);
+      const {data} = await getVideo(route.params.id, 'movie');
+      setTrailer(data.results[0]);
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return movieDetails.backdrop_path && movieDetails.poster_path ? (
     <View style={styles.container}>
       <ImageBackground
@@ -305,12 +324,26 @@ const MoviePage = ({route, navigation}) => {
 
       <View style={styles.content}>
         <View style={styles.contentHeader}>
-          <Image
-            style={styles.posterMovie}
-            source={{
-              uri: `http://image.tmdb.org/t/p/original/${movieDetails.poster_path}`,
-            }}
-          />
+          <Pressable onPress={getTrailer}>
+            <Image
+              style={styles.posterMovie}
+              source={{
+                uri: `http://image.tmdb.org/t/p/original/${movieDetails.poster_path}`,
+              }}
+            />
+            <EvilIcons
+              name="play"
+              size={50}
+              color="#fff"
+              style={{position: "absolute", left: 35, top: 20}}
+            />
+            <ModalTrailer
+              visible={modalTrailerVisible}
+              exit={() => setModalTrailerVisible(false)}
+              trailer={trailer}
+              loading={loading}
+            />
+          </Pressable>
           {rated ? (
             <TouchableOpacity
               activeOpacity={0.5}

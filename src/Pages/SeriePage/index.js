@@ -6,6 +6,7 @@ import {
   View,
   ImageBackground,
   ScrollView,
+  Pressable,
 } from 'react-native';
 import styles from './style';
 import {
@@ -14,6 +15,7 @@ import {
   rate,
   unmarkFavorite,
   markFavorite,
+  getVideo,
 } from '../../service/api';
 import Icon from 'react-native-vector-icons/AntDesign';
 import Load from '../../Components/Load';
@@ -24,6 +26,7 @@ import {Context} from '../../context';
 import ModalRating from '../../Components/ModalRating';
 import ButtonFavorite from '../../Components/ButtonFavorite';
 import ButtonGoBack from '../../Components/ButtonGoBack';
+import ModalTrailer from '../../Components/ModalTrailer';
 
 const SeriePage = ({route, navigation}) => {
   const {id, user, udapte, setUpdate} = useContext(Context);
@@ -39,6 +42,10 @@ const SeriePage = ({route, navigation}) => {
   const [rating, setRating] = useState(0);
 
   const [fav, setFav] = useState();
+
+  const [modalTrailerVisible, setModalTrailerVisible] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [trailer, setTrailer] = useState([]);
 
   useEffect(() => {
     const getResponseSeriesDetails = async () => {
@@ -96,6 +103,19 @@ const SeriePage = ({route, navigation}) => {
     setUpdate(!udapte);
   };
 
+  const getTrailer = async () => {
+    try {
+      setModalTrailerVisible(true);
+      setLoading(true);
+      const {data} = await getVideo(route.params.id, 'tv');
+      setTrailer(data.results[0]);
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return seriesDetails.backdrop_path && seriesDetails.poster_path ? (
     <View style={styles.container}>
       <ImageBackground
@@ -111,12 +131,26 @@ const SeriePage = ({route, navigation}) => {
 
       <View style={styles.content}>
         <View style={styles.contentHeader}>
-          <Image
-            style={styles.posterMovie}
-            source={{
-              uri: `http://image.tmdb.org/t/p/original/${seriesDetails.poster_path}`,
-            }}
-          />
+          <Pressable onPress={getTrailer}>
+            <Image
+              style={styles.posterMovie}
+              source={{
+                uri: `http://image.tmdb.org/t/p/original/${seriesDetails.poster_path}`,
+              }}
+            />
+            <EvilIcons
+              name="play"
+              size={50}
+              color="#fff"
+              style={{position: 'absolute', left: 35, top: 20}}
+            />
+            <ModalTrailer
+              visible={modalTrailerVisible}
+              exit={() => setModalTrailerVisible(false)}
+              trailer={trailer}
+              loading={loading}
+            />
+          </Pressable>
           {rated ? (
             <TouchableOpacity
               activeOpacity={0.5}

@@ -18,8 +18,9 @@ const styles = StyleSheet.create({
     top: '10%',
   },
   logoContent: {
-    top: -140,
-    height: 135,
+    top: -160,
+    width: 180,
+    height: 180,
     resizeMode: 'cover',
     alignSelf: 'center',
     position: 'absolute',
@@ -54,7 +55,12 @@ const styles = StyleSheet.create({
     fontFamily: 'OpenSans-Bold',
     color: '#1F1D36',
   },
-  loading: {flex: 1, alignItems: 'center', justifyContent: 'center', top: 250},
+  loading: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    bottom: -300,
+  },
 });
 
 export default styles;
