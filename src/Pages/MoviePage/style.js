@@ -214,7 +214,6 @@ const styles = StyleSheet.create({
     fontFamily: 'OpenSans-Bold',
     fontSize: 10,
     color: '#000',
-    width: '50%',
     padding: 5,
   },
   btnAddList: {
@@ -222,10 +221,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   containerAdd: {
-    alignSelf: 'flex-start',
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 10,
     borderRadius: 20,
     backgroundColor: '#C4C4C4',
   },

@@ -25,6 +25,7 @@ import {
   getUserList,
   getMoviesDetailsList,
   getVideo,
+  getProviders,
 } from '../../service/api';
 import Icon from 'react-native-vector-icons/AntDesign';
 import EvilIcons from 'react-native-vector-icons/EvilIcons';
@@ -58,6 +59,7 @@ const MoviePage = ({route, navigation}) => {
   const [tratColor] = useState(new Animated.Value(0));
   const [loading, setLoading] = useState(false);
   const [trailer, setTrailer] = useState([]);
+  const [dataStreaming, setDataStreaming] = useState([]);
 
   useEffect(() => {
     const getResponseMovieDetails = async () => {
@@ -106,6 +108,8 @@ const MoviePage = ({route, navigation}) => {
       setUserList(response.data);
     };
     getResponseListMovies();
+
+    getStreaming();
   }, [id, route.params.id, udapte, user.id]);
 
   const Directing = movieCredits.crew?.find(
@@ -309,6 +313,18 @@ const MoviePage = ({route, navigation}) => {
     }
   };
 
+  const getStreaming = async () => {
+    try {
+      setLoading(true);
+      const {data} = await getProviders(route.params.id, 'movie');
+      setDataStreaming(data?.results?.BR?.flatrate[0]);
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return movieDetails.backdrop_path && movieDetails.poster_path ? (
     <View style={styles.container}>
       <ImageBackground
@@ -335,7 +351,7 @@ const MoviePage = ({route, navigation}) => {
               name="play"
               size={50}
               color="#fff"
-              style={{position: "absolute", left: 35, top: 20}}
+              style={{position: 'absolute', left: 35, top: 20}}
             />
             <ModalTrailer
               visible={modalTrailerVisible}
@@ -415,7 +431,12 @@ const MoviePage = ({route, navigation}) => {
                 </Text>
               </View>
             </View>
-            <View>
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                marginTop: 5,
+              }}>
               <TouchableOpacity
                 onPress={handleOpen}
                 style={styles.containerAdd}>
@@ -429,6 +450,26 @@ const MoviePage = ({route, navigation}) => {
                 </View>
                 <Text style={styles.textAddList}>Adicionar a uma lista</Text>
               </TouchableOpacity>
+              <View
+                style={{
+                  flex: 1,
+                  flexDirection: 'row',
+                  justifyContent: 'center',
+                }}>
+                <Image
+                  style={{
+                    width: 30,
+                    height: 30,
+                    borderRadius: 7,
+                    marginEnd: 5,
+                    borderWidth: 1,
+                    borderColor: 'rgba(255,255,255,0.2)',
+                  }}
+                  source={{
+                    uri: `http://image.tmdb.org/t/p/original/${dataStreaming?.logo_path}`,
+                  }}
+                />
+              </View>
             </View>
           </View>
         </View>

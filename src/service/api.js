@@ -243,3 +243,11 @@ export const getVideo = async (id, midia) => {
       console.warn('Erro ao buscar trailers');
     });
 };
+
+export const getProviders = async (id, midia) => {
+  return api
+    .get(`/${midia}/${id}/watch/providers?api_key=${api_key}`)
+    .catch(error => {
+      console.warn('Erro ao buscar providers');
+    });
+};

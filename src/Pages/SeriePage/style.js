@@ -9,7 +9,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   flex2_5: {
-    flex: 2,
+    flex: 1,
   },
   btnsContainer: {
     width: '90%',
@@ -59,9 +59,7 @@ const styles = StyleSheet.create({
     marginStart: 15,
   },
   contentHeader: {
-    height: '30%',
     flexDirection: 'row',
-    marginBottom: 5,
   },
   posterMovie: {
     width: 116,
@@ -131,16 +129,15 @@ const styles = StyleSheet.create({
     fontFamily: 'OpenSans-Regular',
   },
   contentOverview: {
-    flex: 1,
-    marginTop: 10,
     marginEnd: 20,
-    marginBottom: 15,
+    marginBottom: 20,
   },
   taglineMovie: {
     color: '#fff',
     fontSize: 14,
     lineHeight: 16,
     marginBottom: 10,
+    textTransform: 'uppercase',
     fontFamily: 'OpenSans-Regular',
   },
   overviewMovie: {

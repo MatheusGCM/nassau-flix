@@ -3,6 +3,7 @@ import YoutubePlayer from 'react-native-youtube-iframe';
 import {
   ActivityIndicator,
   Modal,
+  StatusBar,
   Text,
   TouchableWithoutFeedback,
   View,
@@ -16,7 +17,8 @@ const ModalTrailer = ({visible, exit, trailer, loading}) => {
       animationType="fade"
       transparent={true}
       visible={visible}
-      onRequestClose={exit}>
+      onRequestClose={exit}
+      statusBarTranslucent={true}>
       <TouchableWithoutFeedback onPress={exit} touchSoundDisabled>
         <View style={styles.containerExit} />
       </TouchableWithoutFeedback>

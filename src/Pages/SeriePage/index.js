@@ -16,6 +16,7 @@ import {
   unmarkFavorite,
   markFavorite,
   getVideo,
+  getProviders,
 } from '../../service/api';
 import Icon from 'react-native-vector-icons/AntDesign';
 import Load from '../../Components/Load';
@@ -46,6 +47,7 @@ const SeriePage = ({route, navigation}) => {
   const [modalTrailerVisible, setModalTrailerVisible] = useState(false);
   const [loading, setLoading] = useState(false);
   const [trailer, setTrailer] = useState([]);
+  const [dataStreaming, setDataStreaming] = useState([]);
 
   useEffect(() => {
     const getResponseSeriesDetails = async () => {
@@ -85,6 +87,8 @@ const SeriePage = ({route, navigation}) => {
       };
       getResponse();
     }
+
+    getStreaming();
   }, [id, route.params.id, udapte]);
 
   const favorite = async () => {
@@ -109,6 +113,18 @@ const SeriePage = ({route, navigation}) => {
       setLoading(true);
       const {data} = await getVideo(route.params.id, 'tv');
       setTrailer(data.results[0]);
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getStreaming = async () => {
+    try {
+      setLoading(true);
+      const {data} = await getProviders(route.params.id, 'tv');
+      setDataStreaming(data.results.BR.flatrate);
     } catch (error) {
       console.log(error);
     } finally {
@@ -223,20 +239,48 @@ const SeriePage = ({route, navigation}) => {
                 </Text>
               </View>
             </View>
+            {dataStreaming && (
+              <View
+                style={{
+                  flexDirection: 'row',
+                  marginTop: 5,
+                  marginBottom: 10,
+                  alignItems: 'center',
+                }}>
+                {dataStreaming.map(item => (
+                  <Image
+                    key={String(item.provider_id)}
+                    style={{
+                      width: 30,
+                      height: 30,
+                      borderRadius: 7,
+                      marginEnd: 5,
+                      borderWidth: 1,
+                      borderColor: 'rgba(255,255,255,0.2)',
+                    }}
+                    source={{
+                      uri: `http://image.tmdb.org/t/p/original/${item.logo_path}`,
+                    }}
+                  />
+                ))}
+              </View>
+            )}
           </View>
         </View>
-        <ScrollView style={styles.contentOverview}>
-          <Text style={styles.taglineMovie}>
-            {seriesDetails.tagline ? seriesDetails.tagline : 'Sinopse:'}
-          </Text>
-          <Text style={styles.overviewMovie}>
-            {seriesDetails.overview
-              ? seriesDetails.overview
-              : 'Sem descrição...'}
-          </Text>
-        </ScrollView>
-        <View style={styles.flex2_5}>
-          <ScrollView>
+        <ScrollView>
+          <View>
+            <Text style={styles.taglineMovie}>
+              {seriesDetails.tagline ? seriesDetails.tagline : 'Sinopse:'}
+            </Text>
+            <ScrollView style={styles.contentOverview}>
+              <Text style={styles.overviewMovie}>
+                {seriesDetails.overview
+                  ? seriesDetails.overview
+                  : 'Sem descrição...'}
+              </Text>
+            </ScrollView>
+          </View>
+          <View>
             {seriesDetails.seasons.map((item, index) => (
               <Season
                 {...item}
@@ -253,8 +297,8 @@ const SeriePage = ({route, navigation}) => {
                 }}
               />
             ))}
-          </ScrollView>
-        </View>
+          </View>
+        </ScrollView>
       </View>
     </View>
   ) : (
