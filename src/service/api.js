@@ -41,9 +41,9 @@ export const getAccount = async session_id => {
       console.warn('Deu pauu na busca do usuario ');
     });
 };
-export const getMovies = async page => {
+export const getMidia = async (midia, page) => {
   return api
-    .get(`/movie/popular?api_key=${api_key}&language=pt-BR&page=${page}`)
+    .get(`/${midia}/popular?api_key=${api_key}&language=pt-BR&page=${page}`)
     .catch(error => {
       console.warn('Deu pauu na busca dos filmes');
     });
@@ -249,5 +249,13 @@ export const getProviders = async (id, midia) => {
     .get(`/${midia}/${id}/watch/providers?api_key=${api_key}`)
     .catch(error => {
       console.warn('Erro ao buscar providers');
+    });
+};
+
+export const getGenres = async midia => {
+  return api
+    .get(`/genre/${midia}/list?api_key=${api_key}&language=pt-BR`)
+    .catch(error => {
+      console.warn('Erro ao buscar generos');
     });
 };

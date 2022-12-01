@@ -33,6 +33,7 @@ const SeriePage = ({route, navigation}) => {
   const {id, user, udapte, setUpdate} = useContext(Context);
 
   const [seriesDetails, setSeriesDetails] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   const [visible, setVisible] = useState(false);
   const [seasonNumber, setSeasonNumber] = useState();
@@ -43,62 +44,68 @@ const SeriePage = ({route, navigation}) => {
   const [rating, setRating] = useState(0);
 
   const [fav, setFav] = useState();
+  const [loadingFavorite, setLoadingFavorite] = useState(false);
 
   const [modalTrailerVisible, setModalTrailerVisible] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [loadingTrailer, setLoadingTrailer] = useState(false);
   const [trailer, setTrailer] = useState([]);
   const [dataStreaming, setDataStreaming] = useState([]);
 
   useEffect(() => {
-    const getResponseSeriesDetails = async () => {
-      const [responseSeriesDetails] = await Promise.all([
-        getSeriesDetails(route.params.id),
-      ]);
-      if (responseSeriesDetails.status === 200) {
-        setSeriesDetails(responseSeriesDetails.data);
-      }
-    };
     getResponseSeriesDetails();
-
-    if (udapte) {
-      const getResponseFavorite = async () => {
-        const response = await getAccountStates('tv', route.params.id, id);
-        setFav(response.data.favorite);
-      };
-      getResponseFavorite();
-    } else {
-      const getResponseFavorite = async () => {
-        const response = await getAccountStates('tv', route.params.id, id);
-        setFav(response.data.favorite);
-      };
-      getResponseFavorite();
-    }
-
-    if (udapte) {
-      const getResponse = async () => {
-        const reponse = await getAccountStates('tv', route.params.id, id);
-        setRated(reponse.data.rated);
-      };
-      getResponse();
-    } else {
-      const getResponse = async () => {
-        const reponse = await getAccountStates('tv', route.params.id, id);
-        setRated(reponse.data.rated);
-      };
-      getResponse();
-    }
-
+    getResponseFavorite();
+    getResponseRated();
     getStreaming();
-  }, [id, route.params.id, udapte]);
+  }, []);
+
+  useEffect(() => {
+    getResponseRated();
+  }, [udapte]);
+
+  const getResponseSeriesDetails = async () => {
+    try {
+      setLoading(true);
+      const {data} = await getSeriesDetails(route.params.id);
+      setSeriesDetails(data);
+    } catch (error) {
+      console.warn(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getResponseFavorite = async () => {
+    try {
+      setLoadingFavorite(true);
+      const {data} = await getAccountStates('tv', route.params.id, id);
+      setFav(data.favorite);
+    } catch (error) {
+      console.warn(error);
+    } finally {
+      setLoadingFavorite(false);
+    }
+  };
+
+  const getResponseRated = async () => {
+    try {
+      const {data} = await getAccountStates('tv', route.params.id, id);
+      setRated(data.rated.value);
+    } catch (error) {
+      console.warn(error);
+    }
+  };
 
   const favorite = async () => {
-    setUpdate(!udapte);
-    if (fav) {
-      setFav(false);
-      await unmarkFavorite(user.id, id, 'tv', route.params.id);
-    } else {
-      setFav(true);
-      await markFavorite(user.id, id, 'tv', route.params.id);
+    try {
+      if (fav) {
+        setFav(false);
+        await unmarkFavorite(user.id, id, 'tv', route.params.id);
+      } else {
+        setFav(true);
+        await markFavorite(user.id, id, 'tv', route.params.id);
+      }
+    } catch (error) {
+      console.warn(error);
     }
   };
 
@@ -110,13 +117,13 @@ const SeriePage = ({route, navigation}) => {
   const getTrailer = async () => {
     try {
       setModalTrailerVisible(true);
-      setLoading(true);
+      setLoadingTrailer(true);
       const {data} = await getVideo(route.params.id, 'tv');
       setTrailer(data.results[0]);
     } catch (error) {
       console.log(error);
     } finally {
-      setLoading(false);
+      setLoadingTrailer(false);
     }
   };
 
@@ -124,7 +131,7 @@ const SeriePage = ({route, navigation}) => {
     try {
       setLoading(true);
       const {data} = await getProviders(route.params.id, 'tv');
-      setDataStreaming(data.results.BR.flatrate);
+      setDataStreaming(data.results.BR);
     } catch (error) {
       console.log(error);
     } finally {
@@ -132,7 +139,7 @@ const SeriePage = ({route, navigation}) => {
     }
   };
 
-  return seriesDetails.backdrop_path && seriesDetails.poster_path ? (
+  return !loading ? (
     <View style={styles.container}>
       <ImageBackground
         style={styles.flex1}
@@ -141,7 +148,11 @@ const SeriePage = ({route, navigation}) => {
         }}>
         <View style={styles.btnsContainer}>
           <ButtonGoBack navigation={navigation} SeriePage={true} />
-          <ButtonFavorite onPress={favorite} favorite={fav} />
+          <ButtonFavorite
+            onPress={favorite}
+            favorite={fav}
+            loading={loadingFavorite}
+          />
         </View>
       </ImageBackground>
 
@@ -164,7 +175,7 @@ const SeriePage = ({route, navigation}) => {
               visible={modalTrailerVisible}
               exit={() => setModalTrailerVisible(false)}
               trailer={trailer}
-              loading={loading}
+              loading={loadingTrailer}
             />
           </Pressable>
           {rated ? (
@@ -175,8 +186,7 @@ const SeriePage = ({route, navigation}) => {
                 setModalVisible(true);
               }}>
               <Text style={styles.rated.text}>
-                Sua nota:{' '}
-                {rated.value === 10 ? rated.value : rated.value.toFixed(1)}/10
+                Sua nota: {rated === 10 ? rated : rated?.toFixed(1)}/10
               </Text>
 
               <View style={styles.icon}>
@@ -213,7 +223,7 @@ const SeriePage = ({route, navigation}) => {
               <View style={styles.boxDirectorMovie}>
                 <Text style={styles.directorMovie}>Criado por</Text>
                 <Text style={styles.directorMovie.director}>
-                  {seriesDetails?.created_by[0]?.name
+                  {seriesDetails.created_by
                     ? seriesDetails?.created_by[0]?.name
                     : 'Desconhecido'}
                 </Text>
@@ -247,7 +257,7 @@ const SeriePage = ({route, navigation}) => {
                   marginBottom: 10,
                   alignItems: 'center',
                 }}>
-                {dataStreaming.map(item => (
+                {dataStreaming?.flatrate?.map(item => (
                   <Image
                     key={String(item.provider_id)}
                     style={{
@@ -281,7 +291,7 @@ const SeriePage = ({route, navigation}) => {
             </ScrollView>
           </View>
           <View>
-            {seriesDetails.seasons.map((item, index) => (
+            {seriesDetails?.seasons?.map((item, index) => (
               <Season
                 {...item}
                 key={String(item.id)}

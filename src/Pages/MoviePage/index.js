@@ -1,6 +1,6 @@
+/* eslint-disable react-native/no-inline-styles */
 import React, {useContext, useEffect, useState, useRef} from 'react';
 import BottomSheet from '@gorhom/bottom-sheet';
-import {RadioButton} from 'react-native-paper';
 import {
   Image,
   Text,
@@ -8,8 +8,6 @@ import {
   View,
   ImageBackground,
   ScrollView,
-  FlatList,
-  Modal,
   Animated,
   Pressable,
 } from 'react-native';
@@ -38,97 +36,159 @@ import {Context} from '../../context';
 import ButtonFavorite from '../../Components/ButtonFavorite';
 import ButtonGoBack from '../../Components/ButtonGoBack';
 import ModalTrailer from '../../Components/ModalTrailer';
+import ModalListSucess from '../../Components/ModalListSucess';
+import ModalSalveFilme from '../../Components/ModalSalveFilme';
 
 const MoviePage = ({route, navigation}) => {
   const {id, user, udapte, setUpdate} = useContext(Context);
   const bottomSheetRef = useRef(BottomSheet);
 
   const [movieDetails, setMovieDetails] = useState([]);
-  const [movieCredits, setMovieCredits] = useState({});
+  const [movieCredits, setMovieCredits] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   const [fav, setFav] = useState();
+  const [loadingFavorite, setLoadingFavorite] = useState(false);
 
-  const [modalVisible, setModalVisible] = useState(false);
-  const [modalTrailerVisible, setModalTrailerVisible] = useState(false);
   const [rated, setRated] = useState();
-  const [rating, setRating] = useState(0);
+  const [rating, setRating] = useState();
+  const [modalVisible, setModalVisible] = useState(false);
+
+  const [modalTrailerVisible, setModalTrailerVisible] = useState(false);
+  const [loadingTrailer, setLoadingTrailer] = useState(false);
+  const [trailer, setTrailer] = useState([]);
+
+  const [dataStreaming, setDataStreaming] = useState();
+
   const [value, setValue] = useState(0);
   const [modalVisibleSucess, setModalVisibleSucess] = useState(false);
-  const [userList, setUserList] = useState({});
+  const [userList, setUserList] = useState([]);
   const [selected, setSelected] = useState(false);
+  const [listSelected, setListSelected] = useState(true);
   const [tratColor] = useState(new Animated.Value(0));
-  const [loading, setLoading] = useState(false);
-  const [trailer, setTrailer] = useState([]);
-  const [dataStreaming, setDataStreaming] = useState([]);
 
   useEffect(() => {
-    const getResponseMovieDetails = async () => {
-      const [responseMoviesDetails, responseMovieCredits] = await Promise.all([
-        getMoviesDetails(route.params.id),
-        getMovieCredits(route.params.id),
-      ]);
-      if (responseMoviesDetails.status === 200) {
-        setMovieDetails(responseMoviesDetails.data);
-      }
-      if (responseMovieCredits.status === 200) {
-        setMovieCredits(responseMovieCredits.data);
-      }
-    };
     getResponseMovieDetails();
-
-    if (udapte) {
-      const getResponseFavorite = async () => {
-        const response = await getAccountStates('movie', route.params.id, id);
-        setFav(response.data.favorite);
-      };
-      getResponseFavorite();
-    } else {
-      const getResponseFavorite = async () => {
-        const response = await getAccountStates('movie', route.params.id, id);
-        setFav(response.data.favorite);
-      };
-      getResponseFavorite();
-    }
-
-    if (udapte) {
-      const getResponseRated = async () => {
-        const reponse = await getAccountStates('movie', route.params.id, id);
-        setRated(reponse.data.rated);
-      };
-      getResponseRated();
-    } else {
-      const getResponseRated = async () => {
-        const reponse = await getAccountStates('movie', route.params.id, id);
-        setRated(reponse.data.rated);
-      };
-      getResponseRated();
-    }
-    const getResponseListMovies = async () => {
-      const response = await getUserList(user.id, id);
-      setUserList(response.data);
-    };
+    getResponseMovieCredits();
+    getResponseFavorite();
+    getResponseRated();
     getResponseListMovies();
-
     getStreaming();
-  }, [id, route.params.id, udapte, user.id]);
+  }, []);
 
-  const Directing = movieCredits.crew?.find(
-    element => element.job === 'Director',
-  )?.name;
+  useEffect(() => {
+    getResponseRated();
+  }, [udapte]);
 
-  const favorite = async () => {
-    setUpdate(!udapte);
-    if (fav) {
-      setFav(false);
-      await unmarkFavorite(user.id, id, 'movie', route.params.id);
-    } else {
-      setFav(true);
-      await markFavorite(user.id, id, 'movie', route.params.id);
+  const getResponseMovieDetails = async () => {
+    try {
+      setLoading(true);
+      const {data} = await getMoviesDetails(route.params.id);
+      setMovieDetails(data);
+    } catch (error) {
+      console.warn(error);
+    } finally {
+      setLoading(false);
     }
   };
+
+  const getResponseMovieCredits = async () => {
+    try {
+      setLoading(true);
+      const {data} = await getMovieCredits(route.params.id);
+      setMovieCredits(data.cast.slice(0, 10));
+    } catch (error) {
+      console.warn(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getResponseFavorite = async () => {
+    try {
+      setLoadingFavorite(true);
+      const {data} = await getAccountStates('movie', route.params.id, id);
+      setFav(data.favorite);
+    } catch (error) {
+      console.warn(error);
+    } finally {
+      setLoadingFavorite(false);
+    }
+  };
+
+  const getResponseRated = async () => {
+    try {
+      const {data} = await getAccountStates('movie', route.params.id, id);
+      setRated(data.rated.value);
+    } catch (error) {
+      console.warn(error);
+    }
+  };
+
+  const getResponseListMovies = async () => {
+    const {data} = await getUserList(user.id, id);
+    setUserList(data.results);
+  };
+
+  const favorite = async () => {
+    try {
+      if (fav) {
+        setFav(false);
+        await unmarkFavorite(user.id, id, 'movie', route.params.id);
+      } else {
+        setFav(true);
+        await markFavorite(user.id, id, 'movie', route.params.id);
+      }
+    } catch (error) {
+      console.warn(error);
+    }
+  };
+
   const rateMovie = async () => {
     await rate('movie', route.params.id, id, rating);
     setUpdate(!udapte);
+  };
+
+  const getResponseAddMovie = async () => {
+    if (value > 0) {
+      const responseDetailsList = await getMoviesDetailsList(value);
+      if (
+        responseDetailsList.data.items.find(item => item.id === route.params.id)
+      ) {
+        setSelected(true);
+      } else {
+        await addMovieList(id, route.params.id, value);
+        setModalVisibleSucess(true);
+        setSelected(false);
+      }
+    } else {
+      setListSelected(false);
+    }
+  };
+
+  const getTrailer = async () => {
+    try {
+      setModalTrailerVisible(true);
+      setLoadingTrailer(true);
+      const {data} = await getVideo(route.params.id, 'movie');
+      setTrailer(data.results[0]);
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setLoadingTrailer(false);
+    }
+  };
+
+  const getStreaming = async () => {
+    try {
+      setLoading(true);
+      const {data} = await getProviders(route.params.id, 'movie');
+      setDataStreaming(data.results.BR);
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   function handleOpen() {
@@ -147,185 +207,11 @@ const MoviePage = ({route, navigation}) => {
     });
   }
 
-  const getResponseAddMovie = async () => {
-    if (value > 0) {
-      const responseDetailsList = await getMoviesDetailsList(value);
-      if (
-        responseDetailsList.data.items.find(item => item.id === route.params.id)
-      ) {
-        Animated.timing(tratColor, {
-          toValue: 1,
-          duration: 500,
-          useNativeDriver: true,
-        }).start();
-      } else {
-        const response = await addMovieList(id, route.params.id, value);
-        if (response.status === 201) {
-          setModalVisibleSucess(true);
-          Animated.timing(tratColor, {
-            toValue: 0,
-            duration: 500,
-            useNativeDriver: true,
-          }).start();
-        }
-      }
-    } else {
-      Animated.timing(tratColor, {
-        toValue: 1,
-        duration: 500,
-        useNativeDriver: true,
-      }).start();
-    }
-  };
+  const Directing = movieCredits.crew?.find(
+    element => element.job === 'Director',
+  )?.name;
 
-  const modalSalveFilme = () => {
-    return (
-      <BottomSheet
-        backgroundStyle={styles.modal}
-        handleIndicatorStyle={styles.indicator}
-        ref={bottomSheetRef}
-        snapPoints={[1, 280]}>
-        <View>
-          <View style={styles.modalViewHeader}>
-            <Text style={styles.modalViewHeaderTitle}>Salvar filme em...</Text>
-            <TouchableOpacity onPress={handleClose}>
-              <Icon name="close" color={'#000'} size={22} />
-            </TouchableOpacity>
-          </View>
-          <View style={styles.divisor} />
-          <View>
-            <RadioButton.Group
-              value={value}
-              onValueChange={newValue => {
-                setValue(newValue);
-                Animated.timing(tratColor, {
-                  toValue: 0,
-                  duration: 500,
-                  useNativeDriver: true,
-                }).start(() => {
-                  setSelected(true);
-                });
-              }}>
-              <View style={styles.radioBottomRow}>
-                <FlatList
-                  data={userList.results}
-                  keyExtractor={item => String(item.id)}
-                  style={{height: 125}}
-                  ListEmptyComponent={
-                    <TouchableOpacity
-                      onPress={() =>
-                        navigation.navigate('profileScreen', {
-                          screen: 'ListPage',
-                        })
-                      }>
-                      <Text style={styles.emptyTexList}>
-                        Para adicionar um filme você precisar criar uma lista
-                        primeiro. Clique aqui para criar uma lista!
-                      </Text>
-                    </TouchableOpacity>
-                  }
-                  renderItem={({item}) => (
-                    <View
-                      style={{
-                        flexDirection: 'row',
-                        alignItems: 'center',
-                      }}>
-                      <RadioButton color="#000" value={item.id} />
-                      <Text style={styles.textRadioBottom}>{item.name}</Text>
-                    </View>
-                  )}
-                />
-              </View>
-              <View>
-                <View
-                  style={{
-                    alignItems: 'center',
-                    height: 22,
-                  }}>
-                  <Animated.Text
-                    style={{
-                      color: '#EC2626',
-                      opacity: tratColor,
-                      fontFamily: 'OpenSans-MediumItalic',
-                    }}>
-                    {selected
-                      ? 'Filme já existe na lista!'
-                      : 'Selecione uma lista!'}
-                  </Animated.Text>
-                </View>
-                <TouchableOpacity
-                  activeOpacity={0.7}
-                  onPress={getResponseAddMovie}
-                  disabled={userList.results?.length === 0}
-                  style={[
-                    styles.btnSave,
-                    {
-                      backgroundColor:
-                        userList.results?.length === 0 ? '#C4C4C4' : '#000',
-                    },
-                  ]}>
-                  <Text style={styles.textSave}>Salvar</Text>
-                </TouchableOpacity>
-              </View>
-            </RadioButton.Group>
-          </View>
-        </View>
-      </BottomSheet>
-    );
-  };
-
-  const modalListSucess = () => {
-    return (
-      <Modal
-        animationType="fade"
-        transparent={true}
-        visible={modalVisibleSucess}>
-        <View style={styles.modalbackground}>
-          <View style={styles.containerSucess}>
-            <Image source={require('../../assets/check.png')} />
-            <Text style={styles.textSucess}>Lista atualizada com sucesso!</Text>
-            <TouchableOpacity
-              activeOpacity={0.9}
-              onPress={() => {
-                setModalVisibleSucess(false);
-                // handleClose();
-                setUpdate(!udapte);
-              }}
-              style={styles.btnOk}>
-              <Text style={styles.textOk}>Ok</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
-    );
-  };
-
-  const getTrailer = async () => {
-    try {
-      setModalTrailerVisible(true);
-      setLoading(true);
-      const {data} = await getVideo(route.params.id, 'movie');
-      setTrailer(data.results[0]);
-    } catch (error) {
-      console.log(error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const getStreaming = async () => {
-    try {
-      setLoading(true);
-      const {data} = await getProviders(route.params.id, 'movie');
-      setDataStreaming(data?.results?.BR?.flatrate[0]);
-    } catch (error) {
-      console.log(error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return movieDetails.backdrop_path && movieDetails.poster_path ? (
+  return !loading ? (
     <View style={styles.container}>
       <ImageBackground
         style={styles.flex1}
@@ -334,7 +220,11 @@ const MoviePage = ({route, navigation}) => {
         }}>
         <View style={styles.btnsContainer}>
           <ButtonGoBack navigation={navigation} />
-          <ButtonFavorite onPress={favorite} favorite={fav} />
+          <ButtonFavorite
+            onPress={favorite}
+            favorite={fav}
+            loading={loadingFavorite}
+          />
         </View>
       </ImageBackground>
 
@@ -357,7 +247,7 @@ const MoviePage = ({route, navigation}) => {
               visible={modalTrailerVisible}
               exit={() => setModalTrailerVisible(false)}
               trailer={trailer}
-              loading={loading}
+              loading={loadingTrailer}
             />
           </Pressable>
           {rated ? (
@@ -368,8 +258,7 @@ const MoviePage = ({route, navigation}) => {
                 setModalVisible(true);
               }}>
               <Text style={styles.rated.text}>
-                Sua nota:{' '}
-                {rated.value === 10 ? rated.value : rated.value.toFixed(1)}/10
+                Sua nota: {rated === 10 ? rated : rated?.toFixed(1)}/10
               </Text>
 
               <View style={styles.icon}>
@@ -393,7 +282,7 @@ const MoviePage = ({route, navigation}) => {
               setModalVisible(!modalVisible);
             }}
             rating={rating}
-            setRating={value => setRating(value)}
+            setRating={v => setRating(v)}
             rate={rateMovie}
           />
 
@@ -450,55 +339,76 @@ const MoviePage = ({route, navigation}) => {
                 </View>
                 <Text style={styles.textAddList}>Adicionar a uma lista</Text>
               </TouchableOpacity>
-              <View
-                style={{
-                  flex: 1,
-                  flexDirection: 'row',
-                  justifyContent: 'center',
-                }}>
-                <Image
+              {dataStreaming && (
+                <View
                   style={{
-                    width: 30,
-                    height: 30,
-                    borderRadius: 7,
-                    marginEnd: 5,
-                    borderWidth: 1,
-                    borderColor: 'rgba(255,255,255,0.2)',
-                  }}
-                  source={{
-                    uri: `http://image.tmdb.org/t/p/original/${dataStreaming?.logo_path}`,
-                  }}
-                />
-              </View>
+                    flex: 1,
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                  }}>
+                  <Image
+                    style={{
+                      width: 30,
+                      height: 30,
+                      borderRadius: 7,
+                      marginEnd: 5,
+                      borderWidth: 1,
+                      borderColor: 'rgba(255,255,255,0.2)',
+                    }}
+                    source={{
+                      uri: `http://image.tmdb.org/t/p/original/${
+                        dataStreaming.flatrate
+                          ? dataStreaming.flatrate[0].logo_path
+                          : dataStreaming.buy[0].logo_path
+                      }`,
+                    }}
+                  />
+                </View>
+              )}
             </View>
           </View>
         </View>
-        <ScrollView style={styles.contentOverview}>
-          <Text style={styles.taglineMovie}>
-            {movieDetails.tagline
-              ? movieDetails.tagline.toUpperCase()
-              : 'Sinopse:'}
-          </Text>
-          <Text style={styles.overviewMovie}>
-            {movieDetails.overview ? movieDetails.overview : 'Sem descrição...'}
-          </Text>
+        <ScrollView>
+          <View style={styles.contentOverview}>
+            <Text style={styles.taglineMovie}>
+              {movieDetails.tagline ? movieDetails.tagline : 'Sinopse:'}
+            </Text>
+            <Text style={styles.overviewMovie}>
+              {movieDetails.overview
+                ? movieDetails.overview
+                : 'Sem descrição...'}
+            </Text>
+          </View>
+          <View style={styles.boxElenco}>
+            <Text style={styles.txtBoxElenco}>Elenco</Text>
+          </View>
+          <View style={styles.line} />
+          {movieCredits.map((item, i) => (
+            <Cast key={i} {...item} />
+          ))}
         </ScrollView>
-        <View style={styles.flex2_5}>
-          <>
-            <View style={styles.boxElenco}>
-              <Text style={styles.txtBoxElenco}>Elenco</Text>
-            </View>
-            <View style={styles.line} />
-          </>
-          <FlatList
-            data={movieCredits.cast}
-            keyExtractor={item => String(item.id)}
-            renderItem={({item, i}) => <Cast key={i} {...item} />}
-          />
-        </View>
       </View>
-      {modalSalveFilme()}
-      {modalListSucess()}
+      <ModalSalveFilme
+        bottomSheetRef={bottomSheetRef}
+        onExit={handleClose}
+        value={value}
+        onValueChange={newValue => {
+          setValue(newValue);
+          setListSelected(true);
+        }}
+        userList={userList}
+        navigation={navigation}
+        selected={selected}
+        listSelected={listSelected}
+        onPress={getResponseAddMovie}
+      />
+      <ModalListSucess
+        modalVisibleSucess={modalVisibleSucess}
+        onPress={() => {
+          setModalVisibleSucess(false);
+          setUpdate(!udapte);
+        }}
+      />
     </View>
   ) : (
     <Load />

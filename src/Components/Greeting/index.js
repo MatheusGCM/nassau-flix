@@ -20,11 +20,6 @@ const Greeting = ({screen, user}) => {
           assistiu...
         </Text>
       </View>
-      <View>
-        <Text style={styles.title}>
-          {screen === 'HomeMovie' ? 'Filmes' : 'Séries'} populares este mês
-        </Text>
-      </View>
     </>
   );
 };

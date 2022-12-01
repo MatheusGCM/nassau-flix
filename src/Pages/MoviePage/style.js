@@ -69,7 +69,6 @@ const styles = StyleSheet.create({
   contentHeader: {
     height: '30%',
     flexDirection: 'row',
-    marginBottom: 5,
   },
   posterMovie: {
     width: 116,
@@ -138,10 +137,8 @@ const styles = StyleSheet.create({
     fontFamily: 'OpenSans-Regular',
   },
   contentOverview: {
-    flex: 1,
-    marginTop: 10,
     marginEnd: 20,
-    marginBottom: 15,
+    marginBottom: 10,
   },
   taglineMovie: {
     color: '#fff',
@@ -149,10 +146,12 @@ const styles = StyleSheet.create({
     lineHeight: 16,
     marginBottom: 10,
     fontFamily: 'OpenSans-Regular',
+    textTransform: 'uppercase',
+    paddingTop: 10,
   },
   overviewMovie: {
     color: '#fff',
-    fontSize: 14,
+    fontSize: 13,
     lineHeight: 16,
     textAlign: 'justify',
     fontFamily: 'OpenSans-Regular',
@@ -192,24 +191,6 @@ const styles = StyleSheet.create({
   modalContent: {
     flex: 1,
   },
-
-  modalViewHeaderTitle: {
-    color: '#000',
-    fontSize: 13,
-    fontFamily: 'OpenSans-Bold',
-  },
-  modalViewHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-  },
-  divisor: {
-    width: '100%',
-    marginTop: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: '#BEBEBE',
-  },
   textAddList: {
     fontFamily: 'OpenSans-Bold',
     fontSize: 10,
@@ -221,79 +202,11 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   containerAdd: {
+    marginVertical: 5,
     flexDirection: 'row',
     alignItems: 'center',
     borderRadius: 20,
     backgroundColor: '#C4C4C4',
-  },
-  btnSave: {
-    alignSelf: 'center',
-    alignItems: 'center',
-    padding: 10,
-    width: '25%',
-    borderRadius: 5,
-    backgroundColor: '#000',
-  },
-  textSave: {
-    textTransform: 'uppercase',
-    fontFamily: 'OpenSans-Bold',
-    fontSize: 10,
-    color: '#fff',
-  },
-
-  textRadioBottom: {
-    textTransform: 'uppercase',
-    fontFamily: 'OpenSans-Regular',
-    fontSize: 12,
-    color: '#000',
-  },
-  radioBottomRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'flex-start',
-  },
-
-  containerSucess: {
-    width: '85%',
-    height: 166,
-    alignItems: 'center',
-    borderRadius: 25,
-    backgroundColor: '#fff',
-    paddingTop: 29,
-  },
-  modalbackground: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'rgba(0,0,0,0.7)',
-  },
-  textSucess: {
-    fontFamily: 'OpenSans-Bold',
-    color: '#000',
-    fontSize: 14,
-    marginTop: 17,
-  },
-  btnOk: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: 83,
-    height: 22,
-    borderRadius: 5,
-    backgroundColor: '#000',
-    marginTop: 21,
-  },
-  textOk: {
-    textTransform: 'uppercase',
-    fontFamily: 'OpenSans-Bold',
-    fontSize: 10,
-    color: '#fff',
-  },
-  emptyTexList: {
-    color: '#000',
-    margin: '10%',
-    fontFamily: 'OpenSans-Regular',
-    fontSize: 13,
-    borderRadius: 6,
   },
 });
 
