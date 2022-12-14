@@ -96,12 +96,11 @@ const Home = ({route, navigation}) => {
         route.name === 'HomeMovie' ? 'movie' : 'tv',
         1,
       );
-      const aux = data.results.map(item => ({
-        ...item,
-        genre_ids: item.genre_ids.filter(i => i === value.id),
-      }));
-      const aux2 = aux.filter(item => item.genre_ids.length !== 0);
-      setDataMidiaGenres(aux2);
+      setDataMidiaGenres(
+        data.results.filter(item => {
+          return item.genre_ids.find(i => i === value.id);
+        }),
+      );
     } catch (error) {
       console.warn(error);
     } finally {
@@ -116,12 +115,10 @@ const Home = ({route, navigation}) => {
         route.name === 'HomeMovie' ? 'movie' : 'tv',
         pageGenres,
       );
-      const aux = data.results.map(item => ({
-        ...item,
-        genre_ids: item.genre_ids.filter(i => i === genresSelected.id),
-      }));
-      const aux2 = aux.filter(item => item.genre_ids.length !== 0);
-      setDataMidiaGenres([...dataMidiaGenres, ...aux2]);
+      let dataPage = data.results.filter(item => {
+        return item.genre_ids.find(i => i === genresSelected.id);
+      });
+      setDataMidiaGenres([...dataMidiaGenres, ...dataPage]);
     } catch (error) {
       console.warn(error);
     } finally {
@@ -141,6 +138,7 @@ const Home = ({route, navigation}) => {
       </View>
       <View style={{flexDirection: 'row', marginBottom: 10}}>
         <FlatList
+          showsHorizontalScrollIndicator={false}
           ListHeaderComponent={() => (
             <Pressable
               onPress={getResponseMidiaPopular}

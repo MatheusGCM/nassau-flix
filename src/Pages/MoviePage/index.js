@@ -24,6 +24,7 @@ import {
   getMoviesDetailsList,
   getVideo,
   getProviders,
+  getRecommendation,
 } from '../../service/api';
 import Icon from 'react-native-vector-icons/AntDesign';
 import EvilIcons from 'react-native-vector-icons/EvilIcons';
@@ -38,6 +39,7 @@ import ButtonGoBack from '../../Components/ButtonGoBack';
 import ModalTrailer from '../../Components/ModalTrailer';
 import ModalListSucess from '../../Components/ModalListSucess';
 import ModalSalveFilme from '../../Components/ModalSalveFilme';
+import Recomendation from '../../Components/Recomendation';
 
 const MoviePage = ({route, navigation}) => {
   const {id, user, udapte, setUpdate} = useContext(Context);
@@ -60,6 +62,8 @@ const MoviePage = ({route, navigation}) => {
 
   const [dataStreaming, setDataStreaming] = useState();
 
+  const [dataRecomendation, setDataRecomendation] = useState([]);
+
   const [value, setValue] = useState(0);
   const [modalVisibleSucess, setModalVisibleSucess] = useState(false);
   const [userList, setUserList] = useState([]);
@@ -74,6 +78,7 @@ const MoviePage = ({route, navigation}) => {
     getResponseRated();
     getResponseListMovies();
     getStreaming();
+    getRecomendations();
   }, []);
 
   useEffect(() => {
@@ -171,7 +176,7 @@ const MoviePage = ({route, navigation}) => {
       setModalTrailerVisible(true);
       setLoadingTrailer(true);
       const {data} = await getVideo(route.params.id, 'movie');
-      setTrailer(data.results[0]);
+      setTrailer(data.results.pop());
     } catch (error) {
       console.log(error);
     } finally {
@@ -184,6 +189,18 @@ const MoviePage = ({route, navigation}) => {
       setLoading(true);
       const {data} = await getProviders(route.params.id, 'movie');
       setDataStreaming(data.results.BR);
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getRecomendations = async () => {
+    try {
+      setLoading(true);
+      const {data} = await getRecommendation('movie', route.params.id);
+      setDataRecomendation(data.results);
     } catch (error) {
       console.log(error);
     } finally {
@@ -368,7 +385,7 @@ const MoviePage = ({route, navigation}) => {
             </View>
           </View>
         </View>
-        <ScrollView>
+        <ScrollView showsVerticalScrollIndicator={false}>
           <View style={styles.contentOverview}>
             <Text style={styles.taglineMovie}>
               {movieDetails.tagline ? movieDetails.tagline : 'Sinopse:'}
@@ -386,6 +403,7 @@ const MoviePage = ({route, navigation}) => {
           {movieCredits.map((item, i) => (
             <Cast key={i} {...item} />
           ))}
+          <Recomendation data={dataRecomendation} />
         </ScrollView>
       </View>
       <ModalSalveFilme

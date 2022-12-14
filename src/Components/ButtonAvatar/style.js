@@ -2,7 +2,8 @@ import {StyleSheet} from 'react-native';
 
 const styles = StyleSheet.create({
   header_avatar: {
-    alignItems: 'flex-end',
+    width: 44,
+    alignSelf: 'flex-end',
     marginEnd: 19,
     marginBottom: 5,
   },

@@ -92,6 +92,20 @@ const Profile = ({navigation}) => {
         )}
 
         <Text style={styles.userName}>{user.name}</Text>
+        {/* <Text
+            style={{
+              alignItems: 'baseline',
+              marginStart: 5,
+              color: 'gold',
+              fontFamily: 'OpenSans-SemiBold',
+              fontSize: 13,
+              backgroundColor: 'rgba(255, 255, 255,0.2)',
+              paddingHorizontal: 5,
+              borderRadius: 5,
+            }}>
+            Premium
+          </Text> */}
+
         <TouchableOpacity
           activeOpacity={0.7}
           style={styles.buttonListFilms}

@@ -259,3 +259,13 @@ export const getGenres = async midia => {
       console.warn('Erro ao buscar generos');
     });
 };
+
+export const getRecommendation = async (midia, id) => {
+  return api
+    .get(
+      `/${midia}/${id}/recommendations?api_key=${api_key}&language=pt-BR&page=1`,
+    )
+    .catch(error => {
+      console.warn('Erro ao buscar Recommendations');
+    });
+};

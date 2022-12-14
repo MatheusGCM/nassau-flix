@@ -1,3 +1,5 @@
+/* eslint-disable prettier/prettier */
+/* eslint-disable react-native/no-inline-styles */
 import React, {useContext, useEffect, useState} from 'react';
 import {
   Image,
@@ -17,6 +19,8 @@ import {
   markFavorite,
   getVideo,
   getProviders,
+  getRecommendation,
+  getSeriesDetailsSeason,
 } from '../../service/api';
 import Icon from 'react-native-vector-icons/AntDesign';
 import Load from '../../Components/Load';
@@ -28,6 +32,7 @@ import ModalRating from '../../Components/ModalRating';
 import ButtonFavorite from '../../Components/ButtonFavorite';
 import ButtonGoBack from '../../Components/ButtonGoBack';
 import ModalTrailer from '../../Components/ModalTrailer';
+import Recomendation from '../../Components/Recomendation';
 
 const SeriePage = ({route, navigation}) => {
   const {id, user, udapte, setUpdate} = useContext(Context);
@@ -51,11 +56,14 @@ const SeriePage = ({route, navigation}) => {
   const [trailer, setTrailer] = useState([]);
   const [dataStreaming, setDataStreaming] = useState([]);
 
+  const [dataRecomendation, setDataRecomendation] = useState([]);
+
   useEffect(() => {
     getResponseSeriesDetails();
     getResponseFavorite();
     getResponseRated();
     getStreaming();
+    getRecomendations();
   }, []);
 
   useEffect(() => {
@@ -139,6 +147,18 @@ const SeriePage = ({route, navigation}) => {
     }
   };
 
+  const getRecomendations = async () => {
+    try {
+      setLoading(true);
+      const {data} = await getRecommendation('tv', route.params.id);
+      setDataRecomendation(data.results);
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+  // console.log(seriesDetails.seasons);
   return !loading ? (
     <View style={styles.container}>
       <ImageBackground
@@ -277,7 +297,7 @@ const SeriePage = ({route, navigation}) => {
             )}
           </View>
         </View>
-        <ScrollView>
+        <ScrollView showsVerticalScrollIndicator={false}>
           <View>
             <Text style={styles.taglineMovie}>
               {seriesDetails.tagline ? seriesDetails.tagline : 'Sinopse:'}
@@ -291,7 +311,8 @@ const SeriePage = ({route, navigation}) => {
             </ScrollView>
           </View>
           <View>
-            {seriesDetails?.seasons?.map((item, index) => (
+            {seriesDetails?.seasons?.map(
+              (item, index) =>
               <Season
                 {...item}
                 key={String(item.id)}
@@ -306,8 +327,9 @@ const SeriePage = ({route, navigation}) => {
                   setSeasonSelected(item.season_number);
                 }}
               />
-            ))}
+            )}
           </View>
+          <Recomendation data={dataRecomendation} />
         </ScrollView>
       </View>
     </View>
